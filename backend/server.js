@@ -1,11 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 const connectDB = require("./config/db");
-
-// Import routes
-const authRoutes = require("./routes/auth");
-const tournamentRoutes = require("./routes/tournament");
 
 // Load environment variables
 dotenv.config();
@@ -26,13 +23,16 @@ app.use(express.json());
 const API_PREFIX = process.env.API_PREFIX || "/api";
 
 // Routes
-app.get("/", (req, res) => {
-  res.json({ message: "Tournament Management API" });
-});
+app.use(`${API_PREFIX}/auth`, require("./routes/auth"));
+app.use(`${API_PREFIX}/tournaments`, require("./routes/tournament"));
 
-// Use routes
-app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/tournaments`, tournamentRoutes);
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, "../frontend/public")));
+
+// Catch-all to serve index.html for client-side routing
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/public/index.html"));
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
